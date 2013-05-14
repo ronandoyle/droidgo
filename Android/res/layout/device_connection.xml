@@ -1,0 +1,49 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#47A3FF"
+    android:gravity="center"
+    android:orientation="vertical" >
+
+    <EditText
+        android:id="@+id/device_name"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/name_hint"
+        android:inputType="text"
+        android:textColor="#000000"
+        android:textColorHint="#000000" />
+    
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="30dp">
+    </View>
+
+    <EditText
+        android:id="@+id/device_address"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/address_hint"
+        android:inputType="text"
+        android:paddingTop="15dp"
+        android:textColor="#000000"
+        android:textColorHint="#000000" />
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="30dp" >
+    </View>
+
+    <Button
+        android:id="@+id/device_connect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/button_shape"
+        android:paddingBottom="20dp"
+        android:paddingLeft="40dp"
+        android:paddingRight="40dp"
+        android:paddingTop="20dp"
+        android:text="@string/device_connect" />
+
+</LinearLayout>

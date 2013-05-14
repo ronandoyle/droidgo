@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+
+
+<link rel="stylesheet" type="text/css" href="style.css">
+<script src="jquery-1.9.1.min.js"></script>
+
+<title>DROID-GO Cam</title>
+<script type="text/javascript">
+	var pwd = "";
+
+	function start() {
+		// Need to remove the password.
+		pwd = prompt("Password");
+
+		setTimeout("update()", 100);
+
+		var drawingCanvas = document.getElementById('canvas');
+		var ctx = drawingCanvas.getContext('2d');
+		
+		/* ctx.drawingCanvas.width = window.innerWidth;
+		ctx.drawingCanvas.height = window.innerHeight; */
+
+		drawingCanvas.width = window.innerWidth;
+		drawingCanvas.height = window.innerHeight;
+	}
+
+	function update() {
+		var drawingCanvas = document.getElementById('canvas');
+
+		// Check the element is in the DOM and 
+		// the browser supports canvas
+		if (drawingCanvas.getContext) {
+			// init a 2-dimensional 
+			// drawing context
+			var context = drawingCanvas.getContext('2d');
+			//Canvas commands go here
+
+			var cam = new Image();
+			/* cam.onload = function() {
+				context.drawImage(cam, 0, 0, 
+					cam.width, cam.height);
+			} */
+			cam.onload = function() {
+				context.drawImage(cam, 0, 0, window.innerWidth, window.innerHeight);
+				//context.drawImage(cam, 0, 0, 800, 800)
+			}
+			cam.src = 'cam.jpg?pwd=' + pwd;
+			setTimeout("update()", 100);
+
+		}
+
+	}
+</script>
+
+</head>
+<body onload="start()">
+	
+	<div class="canvas-class">
+		<canvas id="canvas">
+		<p>Your browser doesn't 
+		support canvas.
+		</p>
+	</canvas>
+	</div>
+	<!-- <div>
+		<h1>Welcome to the DROID-GO / uGO interface.</h1>
+	</div> -->
+	
+	
+</body>
+</html>

@@ -1,0 +1,99 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <RelativeLayout
+        android:id="@+id/conectionLayout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+
+         <TextView
+            android:id="@+id/connection_status"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:textSize="20sp" />
+         
+         
+        <Switch
+            android:id="@+id/switch1"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:text="" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/relLayout1"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" >
+
+        <!--
+              For the webview use 300dp for smartphones ("small" screens [ ~4"-5" ])
+         	  use  500dp for tablets ("big" screens [ 7" ])
+        -->
+
+        <WebView
+            android:id="@+id/webView"
+            android:layout_width="fill_parent"
+            android:layout_height="300dp" />
+
+        <SurfaceView
+            android:id="@+id/cameraView"
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_weight="0.19" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/controlsLayout"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="0.175"
+        android:clickable="true"
+        android:background="@drawable/background" >
+
+        <!--
+        <EditText
+                    android:id="@+id/password"
+                    android:layout_width="50dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.42"
+                    android:ems="10"
+                    android:inputType="textPassword" />
+        
+        <EditText
+            android:id="@+id/retype"
+            android:layout_width="50dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:inputType="textPassword" />
+        <Button
+            android:id="@+id/saveButton"
+            android:layout_width="150dip"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            
+            android:text="Save" />
+        
+        
+         <ImageButton
+                android:id="@+id/startButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/play" />
+        
+            <ImageButton
+                android:id="@+id/stopButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/stop" />
+        -->
+
+    </LinearLayout>
+
+</LinearLayout>

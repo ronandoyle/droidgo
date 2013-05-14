@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">DROID-GO</string>
+    <string name="hello_world">Hello world!</string>
+    
+    <!-- Menu items  -->
+    <string name="connect">Connect</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="settings">Settings</string>
+    <!--  -->
+     
+    <string name="title_activity_main">MainActivity</string>
+    <string name="title_device_connection">Device Connection</string>
+    <string name="name_hint">NXT Name&#8230;</string>
+    <string name="address_hint">NXT Hint&#8230;</string>
+    <string name="device_connect">Connect!</string>
+    <string name="bluetooth_connected">Connection Established</string>
+    <string name="bluetooth_lost">Connection Lost</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_data_test">DataTest</string>
+
+</resources>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+        <PreferenceCategory
+                android:title="IP">
+        <EditTextPreference
+                android:name="EditText Preference IP"
+                android:summary="IP address of uGO server"
+                android:defaultValue=""
+                android:title="uGO IP Address"
+                android:key="ipAddress" />
+        </PreferenceCategory>
+        <PreferenceCategory
+                android:title="Port">
+        <EditTextPreference
+                android:name="EditText Preference Port"
+                android:summary="Port of uGO server"
+                android:defaultValue="8080"
+                android:title="uGO Port"
+                android:key="port" />
+        </PreferenceCategory>
+        <PreferenceCategory
+                android:title=" Video Stream">
+        <EditTextPreference
+                android:name="EditText Preference Video Stream"
+                android:summary="Address of video stream"
+                android:defaultValue="bambuser.com/v/3523717"
+                android:title="Video Stream Address"
+                android:key="videoStream" />
+        </PreferenceCategory>
+        
+        
+</PreferenceScreen>
