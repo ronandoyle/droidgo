@@ -33,8 +33,7 @@ public class SendMic extends Activity {
 	private int port=50005;
 	AudioRecord recorder;
 
-	private int sampleRate = 44100;	//Working.
-//	private int sampleRate = 88200;
+	private int sampleRate = 44100;
 	private int channelConfig = AudioFormat.CHANNEL_CONFIGURATION_MONO;    
 	private int audioFormat = AudioFormat.ENCODING_PCM_16BIT;       
 	int minBufSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat);
@@ -49,7 +48,6 @@ public class SendMic extends Activity {
 	    setContentView(R.layout.activity_main);
 	    
 	    minBufSize += 2048;
-//		System.out.println("minBufSize: " + minBufSize);
 	}
 
 
@@ -92,7 +90,7 @@ public class SendMic extends Activity {
 
 	                // Multiplying the buffer value by 35 increases sound quality. Optimal range is between 30 - 40. Any higher and lower and the quality drops.
 	                // THe principle should be the bigger the buffer the better the quality. Going above 40 makes the buffer too big.
-	                recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,sampleRate,channelConfig,audioFormat,minBufSize*35);
+	                recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,sampleRate,channelConfig,audioFormat,minBufSize);
 	                Log.d("DROIDGO", "Recorder initialized");
 
 	                recorder.startRecording();
