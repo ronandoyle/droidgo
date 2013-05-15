@@ -6,7 +6,10 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import com.droidgo.settings.Preferences;
+
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
@@ -24,10 +27,7 @@ import android.widget.TextView;
 
 
 public class SendMic extends Activity {
-	private EditText target;
-	private TextView streamingLabel;
-	private Button startButton,stopButton;
-
+	
 	public byte[] buffer;
 	public static DatagramSocket socket;
 	private int port=50005;
@@ -85,11 +85,14 @@ public class SendMic extends Activity {
 	                Log.d("DROIDGO","Buffer created of size " + minBufSize);
 	                DatagramPacket packet;
 
-	                final InetAddress destination = InetAddress.getByName("10.20.102.100");
+	                // Pulling IP address of server from the settings menu in the app. This allows users to modify settings if the IP address of
+	                // destination changes.
+	                final InetAddress destination = InetAddress.getByName(DROIDGO.iSettings.getString(Preferences.IP_ADDRESS, ""));
 	                Log.d("DROIDGO", "Address retrieved");
 
-
-	                recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,sampleRate,channelConfig,audioFormat,minBufSize*10);
+	                // Multiplying the buffer value by 35 increases sound quality. Optimal range is between 30 - 40. Any higher and lower and the quality drops.
+	                // THe principle should be the bigger the buffer the better the quality. Going above 40 makes the buffer too big.
+	                recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,sampleRate,channelConfig,audioFormat,minBufSize*35);
 	                Log.d("DROIDGO", "Recorder initialized");
 
 	                recorder.startRecording();

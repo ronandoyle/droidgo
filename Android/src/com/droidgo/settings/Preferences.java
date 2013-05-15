@@ -1,6 +1,6 @@
 package com.droidgo.settings;
  
-import com.droidgo.MainActivity;
+import com.droidgo.DROIDGO;
 import com.droidgo.R;
 
 import android.app.Activity;
@@ -33,7 +33,7 @@ public class Preferences extends PreferenceActivity {
 	@Override
 	public void onBackPressed() {
 		Intent intent = new Intent();
-		intent.setClass(Preferences.this, MainActivity.class);
+		intent.setClass(Preferences.this, DROIDGO.class);
 		startActivity(intent);
 		finish();
 		return;

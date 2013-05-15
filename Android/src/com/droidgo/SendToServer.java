@@ -35,7 +35,7 @@ class SendToServer extends AsyncTask<Void, Integer, Void> {
 	protected Void doInBackground(Void... params) {
 
 		HttpClient httpclient = new DefaultHttpClient();
-		HttpPost httppost = new HttpPost("http://" + MainActivity.iSettings.getString(Preferences.IP_ADDRESS, "") +"/droidgo/app.php");
+		HttpPost httppost = new HttpPost("http://" + DROIDGO.iSettings.getString(Preferences.IP_ADDRESS, "") +"/droidgo/app.php");
 		try {
 			List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(
 					2);
