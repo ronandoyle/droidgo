@@ -441,25 +441,25 @@ public class NanoHTTPD
 					files.put("content", saveTmpFile( fbuf, 0, f.size()));
 
 				// check password
-				if(uri.endsWith("cam.jpg")) {
-					String pwd = parms.getProperty("pwd");
-					if(pwd == null) {
-						sendError( HTTP_FORBIDDEN, "WRONG Password: Check your password!" );
-					}
-					/*MessageDigest md = null;
-					byte[] encryptMsg = null;
-					try {
-						md = MessageDigest.getInstance("MD5");
-					} catch (NoSuchAlgorithmException e) {
-						e.printStackTrace();
-					}
-					encryptMsg = md.digest(pwd.getBytes());
-					*/
-					String str = LocalHttpService.getPwd();
-					if(!str.equals(pwd)) {
-						sendError( HTTP_FORBIDDEN, "WRONG Password: Check your password!" );
-					}
-				}
+//				if(uri.endsWith("cam.jpg")) {
+//					String pwd = parms.getProperty("pwd");
+//					if(pwd == null) {
+//						sendError( HTTP_FORBIDDEN, "WRONG Password: Check your password!" );
+//					}
+//					/*MessageDigest md = null;
+//					byte[] encryptMsg = null;
+//					try {
+//						md = MessageDigest.getInstance("MD5");
+//					} catch (NoSuchAlgorithmException e) {
+//						e.printStackTrace();
+//					}
+//					encryptMsg = md.digest(pwd.getBytes());
+//					*/
+//					String str = LocalHttpService.getPwd();
+//					if(!str.equals(pwd)) {
+//						sendError( HTTP_FORBIDDEN, "WRONG Password: Check your password!" );
+//					}
+//				}
 				//
 				
 				// Ok, now do the serve()

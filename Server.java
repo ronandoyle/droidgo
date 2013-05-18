@@ -45,14 +45,8 @@ class Server {
 		System.out.println("Datagram packet set up: " + receivePacket);
 		while (status == true) {
 			
-
-			serverSocket.receive(receivePacket);
-			System.out.println("Packet received.");
-			
+			serverSocket.receive(receivePacket);		
 			toSpeaker(receivePacket.getData());
-			System.out.println("Audio sent to speaker.");
-			// Toolkit.getDefaultToolkit().beep();
-
 		}
 	}
 
@@ -64,7 +58,6 @@ class Server {
 			sourceDataLine.open(format);
 
 			sourceDataLine.start();
-			System.out.println("Speaker ready to receive audio data");
 		} catch (LineUnavailableException e) {
 			e.printStackTrace();
 		}
@@ -73,8 +66,6 @@ class Server {
 	public static void toSpeaker(byte soundbytes[]) {
 
 		sourceDataLine.write(soundbytes, 0, soundbytes.length);
-		System.out.println(soundbytes.toString());
-
 	}
 
 	public static void closeSpeaker() {

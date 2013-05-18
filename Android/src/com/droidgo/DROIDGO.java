@@ -171,12 +171,6 @@ public class DROIDGO extends Activity implements OnTouchListener,
 
 	private void SetupCamera() {
 		SharedPreferences settings = getSharedPreferences("CAMPREFS", 0);
-		LocalHttpService.setPwd(settings.getString("pwd", ""));
-		String password = "droidgo";
-		LocalHttpService.setPwd(password);
-		Editor editor = settings.edit();
-		editor.putString("password", password);
-		editor.commit();
 
 		final SurfaceView preview = (SurfaceView) findViewById(R.id.cameraView);
 		previewHolder = preview.getHolder();
@@ -245,13 +239,8 @@ public class DROIDGO extends Activity implements OnTouchListener,
 		/**
 		 * This is for HTC Flyer (Tablet's)
 		 */
-		params.setPreviewFpsRange(5000, 31000); // setPreviewFrameRate() depreciated for setPreviewFpsRange();
-
-		List<Camera.Size> previewSizes = params.getSupportedPreviewSizes();
-//		System.out.println("PREVIEW SIZES: " + previewSizes.toString());
-
-		List<int[]> previewFPS = params.getSupportedPreviewFpsRange();
-//		System.out.println("PREVIEW FPS: " + previewFPS.toString());
+		// 5000, 31000
+		params.setPreviewFpsRange(5, 31); // setPreviewFrameRate() depreciated for setPreviewFpsRange();
 
 		camera.setParameters(params);
 		camera.startPreview();
