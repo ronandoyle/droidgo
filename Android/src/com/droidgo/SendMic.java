@@ -13,6 +13,7 @@ import android.content.SharedPreferences;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -26,7 +27,7 @@ import android.widget.TextView;
 //Need to look into reducing lag in audio. It has something to do with the buffer sizes.
 
 
-public class SendMic extends Activity {
+public class SendMic extends AsyncTask<Void, Integer, Void>{
 	
 	public byte[] buffer;
 	public static DatagramSocket socket;
@@ -39,15 +40,11 @@ public class SendMic extends Activity {
 	int minBufSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat);
 	private boolean status = true;
 
-
-
-
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-	    super.onCreate(savedInstanceState);
-	    setContentView(R.layout.activity_main);
-	    
-	    minBufSize += 2048;
+	public SendMic(){
+		
+		Log.i("BUFFERSIZE", "" + minBufSize);
+		
+		minBufSize += 2048;
 	}
 
 
@@ -55,7 +52,7 @@ public class SendMic extends Activity {
 	public void start()
 	{
 		status = true;
-		startStreaming();
+		doInBackground();
 		 Log.d("DROIDGO","Streaming started");
 	}
 	
@@ -66,61 +63,50 @@ public class SendMic extends Activity {
 		Log.d("DROIDGO","Recorder released");
 	}
 
-	public void startStreaming() {
 
-
-	    Thread streamThread = new Thread(new Runnable() {
-
-	        @Override
-	        public void run() {
+	@Override
+	protected Void doInBackground(Void... params) {
+				
+		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
 	            try {
 	            	
 	                DatagramSocket socket = new DatagramSocket();
-	                Log.d("DROIDGO", "Socket Created");
 
 	                byte[] buffer = new byte[minBufSize];
 
-	                Log.d("DROIDGO","Buffer created of size " + minBufSize);
 	                DatagramPacket packet;
 
 	                // Pulling IP address of server from the settings menu in the app. This allows users to modify settings if the IP address of
 	                // destination changes.
 	                final InetAddress destination = InetAddress.getByName(DROIDGO.iSettings.getString(Preferences.IP_ADDRESS, ""));
-	                Log.d("DROIDGO", "Address retrieved");
 
-	                // Multiplying the buffer value by 35 increases sound quality. Optimal range is between 30 - 40. Any higher and lower and the quality drops.
-	                // THe principle should be the bigger the buffer the better the quality. Going above 40 makes the buffer too big.
 	                recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,sampleRate,channelConfig,audioFormat,minBufSize);
-	                Log.d("DROIDGO", "Recorder initialized");
 
 	                recorder.startRecording();
-
+	                
+	              // Putting buffer in the packet
+                    packet = new DatagramPacket (buffer,buffer.length,destination,port);
 
 	                while(status == true) {
 
-
-	                    //reading data from MIC into buffer
+	                    // Reading data from MIC into buffer
 	                    minBufSize = recorder.read(buffer, 0, buffer.length);
 
-	                    //putting buffer in the packet
-	                    packet = new DatagramPacket (buffer,buffer.length,destination,port);
-
 	                    socket.send(packet);
-//	                    System.out.println("MinBufferSize: " +minBufSize);
+	                    
+	                    minBufSize = 0;
 
 	                }
 	                
 	            } catch(UnknownHostException e) {
 	                Log.e("DROIDGO", "UnknownHostException");
+	                e.printStackTrace();
 	            } catch (IOException e) {
-	            	e.printStackTrace();
 	                Log.e("DROIDGO", "IOException");
+	                e.printStackTrace();
 	            } 
+		return null;
+	}
 
-	        }
-
-	    });
-	    streamThread.start();
-	 }
 }
 

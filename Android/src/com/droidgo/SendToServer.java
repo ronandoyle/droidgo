@@ -33,7 +33,7 @@ class SendToServer extends AsyncTask<Void, Integer, Void> {
 
 	@Override
 	protected Void doInBackground(Void... params) {
-
+		
 		HttpClient httpclient = new DefaultHttpClient();
 		HttpPost httppost = new HttpPost("http://" + DROIDGO.iSettings.getString(Preferences.IP_ADDRESS, "") +"/droidgo/app.php");
 		try {

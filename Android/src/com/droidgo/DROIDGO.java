@@ -52,6 +52,7 @@ import android.widget.TextView;
 import com.droidgo.comm.CarDroidConnection;
 import com.droidgo.httpservice.LocalHttpService;
 import com.droidgo.settings.Preferences;
+import com.droidgo.DriveClass;
 
 /**
  * The main activity for the project.
@@ -65,7 +66,6 @@ public class DROIDGO extends Activity implements OnTouchListener,
 
 	private LinearLayout controlsLayout; // Section to contain the joystick.
 	private TextView connectionStatus; // Displays connection status (Connected or Disconnected).
-	private int latchX, latchY = 0; // Used for refining the joystick control mechanism.
 	private Joystick joystick; // Joystick object.
 	private CarDroidConnection carDroidCon; // Handles the Bluetooth connection between the App and NXT. So far not being used for the WiFi version (DO NOT REMOVE!).
 	private WebView webV;
@@ -75,21 +75,20 @@ public class DROIDGO extends Activity implements OnTouchListener,
 	private SurfaceHolder previewHolder;
 	private LocalHttpService mBoundService;
 	private boolean mIsBound;
-	private String inArea;
+	
 	private AudioManager audioManager = null;
 
 	public static SharedPreferences iSettings = null;
+	DriveClass driveClass;
 
 	//ACTIVE used when user is touching app, IDLE for when no touch exists
 	private enum StateMachine {
 		ACTIVE, IDLE
 	};
-	private enum DriveCommands{
-		FORWARD, FORWARDx2, FORWARDx3, FORWARDx4, FORWARDx5, FORWARD_LEFT, FORWARD_RIGHT, BACK, BACKx2, CENTER, LEFT, RIGHT
-	};
+	
 
 	private StateMachine state;
-	private DriveCommands driveCommands;
+	
 	SendMic sendMic;
 
 	@Override
@@ -121,7 +120,18 @@ public class DROIDGO extends Activity implements OnTouchListener,
 					//Start camera
 					doBindService();
 					//Start audio
-					sendMic.start();
+					
+					
+					Thread streamAudio = new Thread(new Runnable(){
+
+						@Override
+						public void run() {
+							sendMic.start();
+						}
+						
+					});
+					streamAudio.start();
+					
 					connectionStatus.setText("Connected...");
 					connectionStatus.setTextColor(Color.GREEN);
 
@@ -142,14 +152,11 @@ public class DROIDGO extends Activity implements OnTouchListener,
 		audioManager.setStreamMute(AudioManager.STREAM_SYSTEM, false);
 		
 		state = StateMachine.IDLE;
-		driveCommands = DriveCommands.CENTER;
+		driveClass = new DriveClass();
 
 		SetupCamera();
 
 		SetupCameraFeed();
-		
-		inArea = "";
-
 	}
 
 	private void SetupCameraFeed() {
@@ -170,7 +177,6 @@ public class DROIDGO extends Activity implements OnTouchListener,
 	}
 
 	private void SetupCamera() {
-		SharedPreferences settings = getSharedPreferences("CAMPREFS", 0);
 
 		final SurfaceView preview = (SurfaceView) findViewById(R.id.cameraView);
 		previewHolder = preview.getHolder();
@@ -178,45 +184,44 @@ public class DROIDGO extends Activity implements OnTouchListener,
 		previewHolder.setKeepScreenOn(true);
 		previewHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS); // Needed for Android devices pre 3.0.
 
-		setCameraDisplayOrientation(this, cameraIndex, camera);
 		camera.setPreviewCallback(this);
 		
 	}
 
-	public static void setCameraDisplayOrientation(Activity activity,
-			int cameraId, android.hardware.Camera camera) {
-		android.hardware.Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
-		android.hardware.Camera.getCameraInfo(cameraId, info);
-		
-		// FIXME This code does not work. Need to investigate camera image rotation capabilities further.
-		/*******************************/
-		int rotation = activity.getWindowManager().getDefaultDisplay()
-				.getRotation();
-		int degrees = 0;
-		switch (rotation) {
-		case Surface.ROTATION_0:
-			degrees = 0;
-			break;
-		case Surface.ROTATION_90:
-			degrees = 90;
-			break;
-		case Surface.ROTATION_180:
-			degrees = 180;
-			break;
-		case Surface.ROTATION_270:
-			degrees = 270;
-			break;
-		}
-
-		int result;
-		if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-			result = (info.orientation + degrees) % 360;
-			result = (360 - result) % 360; // compensate the mirror
-		} else { // back-facing
-			result = (info.orientation - degrees + 360) % 360;
-		}
-		camera.setDisplayOrientation(result);
-	}
+//	public static void setCameraDisplayOrientation(Activity activity,
+//			int cameraId, android.hardware.Camera camera) {
+//		android.hardware.Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
+//		android.hardware.Camera.getCameraInfo(cameraId, info);
+//		
+//		// FIXME This code does not work. Need to investigate camera image rotation capabilities further.
+//		/*******************************/
+//		int rotation = activity.getWindowManager().getDefaultDisplay()
+//				.getRotation();
+//		int degrees = 0;
+//		switch (rotation) {
+//		case Surface.ROTATION_0:
+//			degrees = 0;
+//			break;
+//		case Surface.ROTATION_90:
+//			degrees = 90;
+//			break;
+//		case Surface.ROTATION_180:
+//			degrees = 180;
+//			break;
+//		case Surface.ROTATION_270:
+//			degrees = 270;
+//			break;
+//		}
+//
+//		int result;
+//		if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+//			result = (info.orientation + degrees) % 360;
+//			result = (360 - result) % 360; // compensate the mirror
+//		} else { // back-facing
+//			result = (info.orientation - degrees + 360) % 360;
+//		}
+//		camera.setDisplayOrientation(result);
+//	}
 	/*******************************/
 
 	private void initPreview(int width, int height) {
@@ -267,8 +272,6 @@ public class DROIDGO extends Activity implements OnTouchListener,
 	};
 	
 	private void activeEvent(MotionEvent event) {
-//		System.out.println("LATCHX: " + latchX);
-//		System.out.println("LATCHY: " + latchY);
 
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
@@ -277,18 +280,13 @@ public class DROIDGO extends Activity implements OnTouchListener,
 		case MotionEvent.ACTION_UP:
 			// Stopping motors.
 			state = StateMachine.IDLE;
-//			carDroidCon.issueCommand(CarDroidConnection.MOTOR_A_C_STOP, 0); Used for Bluetooth.
-//			carDroidCon.issueCommand(CarDroidConnection.MOTOR_B_CENTER, 0);
-			latchX = 0;
-			latchY = 0;
-//			System.out.println("LATCH X: " + latchX);
-//			System.out.println("LATCH Y: " + latchY);
+			
 			break;
 
 		case MotionEvent.ACTION_MOVE:
 
 			// forward and reverse
-			forwardReverse((int) event.getX(),(int) event.getY());
+			driveClass.driveRegion((int) event.getX(),(int) event.getY());
 
 			// left and right
 //			leftRight((int) event.getX(),(int) event.getY());
@@ -344,166 +342,7 @@ public class DROIDGO extends Activity implements OnTouchListener,
 		return result;
 	}
 
-	private void forwardReverse(int x, int y) {
-
-		/**
-		 * The following x,y values are hardcoded for a HTC One S screen
-		 * dimensions. Tests have not been properly carried out on other
-		 * devices.
-		 * 
-		 * Will more than likely need to change these values to be dynamic,
-		 * based on the devices screen size.
-		 */
-		
-		if (y >= 139 && y < 159 && (x >= 250 && x <= 290)) 
-		{
-			driveCommands = DriveCommands.FORWARD;
-		} 
-		else if (y >= 119 && y < 139 && (x >= 250 && x <= 290)) 
-		{
-			driveCommands = DriveCommands.FORWARDx2;
-		}
-		else if (y >= 99 && y < 119 && (x >= 250 && x <= 290))
-		{
-			driveCommands = DriveCommands.FORWARDx3;
-		}
-		else if (y >= 79 && y < 99 && (x >= 250 && x <= 290))
-		{
-			driveCommands = DriveCommands.FORWARDx4;
-		}
-		else if (y < 79 && (x >= 250 && x <= 290))
-		{
-			driveCommands = DriveCommands.FORWARDx5;
-		}
-		
-		else if (x < 250 && (y >= 159 && y <= 199)) {
-			driveCommands = DriveCommands.LEFT;
-		}
-		// right
-		//FLYER 325
-		else if (x > 290 && (y >= 159 && y <= 199)) {
-			driveCommands = DriveCommands.RIGHT;
-		}
-		
-		// diagonal
-		else if (y < 159 && x < 250)
-		{
-			driveCommands = DriveCommands.FORWARD_LEFT;
-		}
-		else if (y < 159 && x > 250)
-		{
-			driveCommands = DriveCommands.FORWARD_RIGHT;
-		}
-		// reverse
-		// FLYER 267
-		else if (y > 199 && y < 280) 
-		{
-			driveCommands = DriveCommands.BACK;
-		} 
-		else if (y > 280) 
-		{
-			driveCommands = DriveCommands.BACKx2;
-		}
-		// center
-		// FLYER 187 267
-		else if (y >= 159 && y <= 199) 
-		{
-			driveCommands = DriveCommands.CENTER;
-		}
-		
-
-		driveSwitch();
-	}
 	
-	private void driveSwitch() {
-		switch (driveCommands) {
-		case FORWARD:
-			if (inArea != "FORWARD") {
-				new SendToServer("FORWARD").execute();
-				System.out.println("FORWARD");
-				inArea = "FORWARD";
-			}
-			break;
-		case FORWARDx2:
-			if (inArea != "FORWARDx2") {
-				new SendToServer("FORWARDx2").execute();
-				System.out.println("FORWARDx2");
-				inArea = "FORWARDx2";
-			}
-			break;
-		case FORWARDx3:
-			if (inArea != "FORWARDx3") {
-				new SendToServer("FORWARDx3").execute();
-				System.out.println("FORWARDx3");
-				inArea = "FORWARDx3";
-			}
-			break;
-		case FORWARDx4:
-			if (inArea != "FORWARDx4") {
-				new SendToServer("FORWARDx4").execute();
-				System.out.println("FORWARDx4");
-				inArea = "FORWARDx4";
-			}
-			break;
-		case FORWARDx5:
-			if (inArea != "FORWARDx5") {
-				new SendToServer("FORWARDx5").execute();
-				System.out.println("FORWARDx5");
-				inArea = "FORWARDx5";
-			}
-			break;
-		case FORWARD_LEFT:
-			if (inArea != "FORWARD_LEFT") {
-				new SendToServer("FORWARD_LEFT").execute();
-				System.out.println("FORWARD_LEFT");
-				inArea = "FORWARD_LEFT";
-			}
-			break;
-		case FORWARD_RIGHT:
-			if (inArea != "FORWARD_RIGHT") {
-				new SendToServer("FORWARD_RIGHT").execute();
-				System.out.println("FORWARD_RIGHT");
-				inArea = "FORWARD_RIGHT";
-			}
-			break;
-		case BACK:
-			if (inArea != "BACK") {
-				new SendToServer("BACK").execute();
-				System.out.println("BACK");
-				inArea = "BACK";
-			}
-			break;
-		case BACKx2:
-			if (inArea != "BACKx2") {
-				new SendToServer("BACKx2").execute();
-				System.out.println("BACKx2");
-				inArea = "BACKx2";
-			}
-			break;
-		case LEFT:
-			if(inArea != "LEFT"){
-				 new SendToServer("LEFT").execute();
-				 System.out.println("LEFT");
-				 inArea = "LEFT";
-			}
-			break;
-		case RIGHT:
-			if(inArea != "RIGHT"){
-				 new SendToServer("RIGHT").execute();
-				 System.out.println("RIGHT");
-				 inArea = "RIGHT";
-			}
-			break;
-		case CENTER:
-			if (inArea != "CENTER") {
-				new SendToServer("CENTER").execute();
-				System.out.println("CENTER");
-				inArea = "CENTER";
-			}
-			break;
-		default:
-		}
-	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -550,12 +389,20 @@ public class DROIDGO extends Activity implements OnTouchListener,
 		finish();
 	}
 
-	public void onPreviewFrame(byte[] data, Camera camera) {
-		Camera.Parameters params = camera.getParameters();
-		Size size = params.getPreviewSize();
-		final YuvImage image = new YuvImage(data, params.getPreviewFormat(),
-				size.width, size.height, null);
-		mBoundService.setImage(image);
+	public void onPreviewFrame(final byte[] data, final Camera camera) {
+		
+		Thread yuvThread = new Thread (new Runnable() {
+			public void run(){
+				Camera.Parameters params = camera.getParameters();
+				Size size = params.getPreviewSize();
+				final YuvImage image = new YuvImage(data, params.getPreviewFormat(),
+						size.width, size.height, null);
+				mBoundService.setImage(image);
+			}
+		});
+		yuvThread.start();
+		
+		
 	}
 
 	private ServiceConnection conn = new ServiceConnection() {
@@ -572,23 +419,37 @@ public class DROIDGO extends Activity implements OnTouchListener,
 	};
 
 	public void doBindService() {
-		if(camera == null)
-		{
-			camera = Camera.open(cameraIndex);
-		}
+		final Intent mServiceIntent = new Intent(this, LocalHttpService.class);
 		
-		Intent mServiceIntent = new Intent(this, LocalHttpService.class);
-		bindService(mServiceIntent, conn, Context.BIND_AUTO_CREATE);
-		mIsBound = true;
+		Thread bindService = new Thread(new Runnable (){
+			public void run(){
+				if(camera == null)
+				{
+					camera = Camera.open(cameraIndex);
+				}
+				
+				
+				bindService(mServiceIntent, conn, Context.BIND_AUTO_CREATE);
+				mIsBound = true;
+			}
+		});
+		bindService.start();
+		
 	}
 
 	public void doUnbindService() {
-		if (mIsBound) {
-			unbindService(conn);
+		Thread unbindService = new Thread(new Runnable() {
+			public void run(){
+				if (mIsBound) {
+					unbindService(conn);
 
-			camera.release();
-			mIsBound = false;
-		}
+					camera.release();
+					mIsBound = false;
+				}
+			}
+		});
+		unbindService.start();
+		
 	}
 
 	@Override
