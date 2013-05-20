@@ -3,17 +3,16 @@ package com.droidgo.settings;
 import com.droidgo.DROIDGO;
 import com.droidgo.R;
 
-import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.preference.Preference.OnPreferenceClickListener;
-import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.widget.Toast;
- 
+
+/**
+ * The Preferences class is used to set the IP address an port of the Fit-PC3 to be connected to.
+ * @author Ronan Doyle
+ *
+ */
 public class Preferences extends PreferenceActivity {
 
 	private static final String TAG = "droidgo.prefs";

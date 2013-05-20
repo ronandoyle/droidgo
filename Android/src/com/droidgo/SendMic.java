@@ -22,11 +22,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-
-
-//Need to look into reducing lag in audio. It has something to do with the buffer sizes.
-
-
+/**
+ * This class is used to stream audio from the Android device to a Java Server on the Fit-PC3.
+ * 
+ * @author Ronan Doyle
+ * 
+ */
 public class SendMic extends AsyncTask<Void, Integer, Void>{
 	
 	public byte[] buffer;
@@ -40,6 +41,10 @@ public class SendMic extends AsyncTask<Void, Integer, Void>{
 	int minBufSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat);
 	private boolean status = true;
 
+	/**
+	 * Default constructor for the class. Sets the buffer size to 9728. This is the same size as the buffer
+	 * on the Java server. For optimal quality keep this value at 9728 and ensure the Server buffer size matches.
+	 */
 	public SendMic(){
 		
 		Log.i("BUFFERSIZE", "" + minBufSize);
@@ -47,8 +52,9 @@ public class SendMic extends AsyncTask<Void, Integer, Void>{
 		minBufSize += 2048;
 	}
 
-
-	
+	/**
+	 * Starting the streaming to the Java server.
+	 */
 	public void start()
 	{
 		status = true;
@@ -56,6 +62,9 @@ public class SendMic extends AsyncTask<Void, Integer, Void>{
 		 Log.d("DROIDGO","Streaming started");
 	}
 	
+	/**
+	 * Stopping the streaming to the Java server.
+	 */
 	public void stop()
 	{
 		status = false;
@@ -63,7 +72,15 @@ public class SendMic extends AsyncTask<Void, Integer, Void>{
 		Log.d("DROIDGO","Recorder released");
 	}
 
-
+	/**
+	 * Performing streaming of audio content on a background thread/process. This is done to take
+	 * pressure and stress away from the main UI, allowing the app to perform more efficiently.
+	 * This class will take in live audio from the Android devices microphone and stream this raw 
+	 * audio via UDP packets to the Java server. The Java server will then take this raw audio
+	 * and push it to the speakers connected to the Fit-PC3. Using the buffer size laid out above,
+	 * the sound quality is near perfect, with a slight delay of 1-1.5 seconds. This thread is set
+	 * to a high priority to increase performance.
+	 */
 	@Override
 	protected Void doInBackground(Void... params) {
 				

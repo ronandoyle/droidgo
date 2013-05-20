@@ -1,26 +1,30 @@
 package com.droidgo;
 
-
+/**
+ * This class is used to determine the drive command that should be sent to the robot, and then send that command.
+ * 
+ * @author Ronan Doyle
+ * 
+ */
 public class DriveClass {
-	
-	
-	
 
+	// String value which will be used as a latch system. When this latch is sent it will only allow the drive command to
+	// be sent to the FitPC3 once. This will prevent the FitPC3 from being bombarded with data.
 	private String inArea;
-	
 
-	
-
+	// The drive commands that will be sent to the FitPC.
 	private enum DriveCommands{
 		FORWARD, FORWARDx2, FORWARDx3, FORWARDx4, FORWARDx5, FORWARD_LEFT, FORWARD_RIGHT, BACK, BACKx2, CENTER, LEFT, RIGHT
 	};
 	private DriveCommands driveCommands;
 	
-	
+	/**
+	 * The constructor for the Drive Class. Sets the initial position of the robots motors to the center.
+	 */
 	public DriveClass()
 	{
 		setDriveCommands(DriveCommands.CENTER);
-		inArea = "";
+		inArea = "CENTER";
 	}
 	
 	public String getInArea() {
@@ -39,82 +43,69 @@ public class DriveClass {
 		this.driveCommands = driveCommands;
 	}
 	
+	/**
+	 *  Based on the x, y coordinates, a drive commands will be set.
+	 * @param x
+	 * @param y
+	 */
 	public void driveRegion(int x, int y) {
 
 		/**
 		 * The following x,y values are hardcoded for a HTC One S screen
 		 * dimensions. Tests have not been properly carried out on other
 		 * devices.
-		 * 
-		 * Will more than likely need to change these values to be dynamic,
-		 * based on the devices screen size.
 		 */
 		
 		if (y >= 139 && y < 159 && (x >= 250 && x <= 290)) 
 		{
-//			driveCommands = DriveCommands.FORWARD;
 			setDriveCommands(DriveCommands.FORWARD);
 		} 
 		else if (y >= 119 && y < 139 && (x >= 250 && x <= 290)) 
 		{
-//			driveCommands = DriveCommands.FORWARDx2;
 			setDriveCommands(DriveCommands.FORWARDx2);
 		}
 		else if (y >= 99 && y < 119 && (x >= 250 && x <= 290))
 		{
-//			driveCommands = DriveCommands.FORWARDx3;
 			setDriveCommands(DriveCommands.FORWARDx3);
 		}
 		else if (y >= 79 && y < 99 && (x >= 250 && x <= 290))
 		{
-//			driveCommands = DriveCommands.FORWARDx4;
 			setDriveCommands(DriveCommands.FORWARDx4);
 		}
 		else if (y < 79 && (x >= 250 && x <= 290))
 		{
-//			driveCommands = DriveCommands.FORWARDx5;
 			setDriveCommands(DriveCommands.FORWARDx5);
 		}
 		
 		else if (x < 250 && (y >= 159 && y <= 199)) {
-//			driveCommands = DriveCommands.LEFT;
 			setDriveCommands(DriveCommands.LEFT);
 		}
 		// right
-		//FLYER 325
 		else if (x > 290 && (y >= 159 && y <= 199)) {
-//			driveCommands = DriveCommands.RIGHT;
 			setDriveCommands(DriveCommands.RIGHT);
 		}
 		
 		// diagonal
 		else if (y < 159 && x < 250)
 		{
-//			driveCommands = DriveCommands.FORWARD_LEFT;
 			setDriveCommands(DriveCommands.FORWARD_LEFT);
 		}
 		else if (y < 159 && x > 250)
 		{
-//			driveCommands = DriveCommands.FORWARD_RIGHT;
 			setDriveCommands(DriveCommands.FORWARD_RIGHT);
 		}
 		// reverse
-		// FLYER 267
 		else if (y > 199 && y < 280) 
 		{
-//			driveCommands = DriveCommands.BACK;
 			setDriveCommands(DriveCommands.BACK);
 		} 
 		else if (y > 280) 
 		{
-//			driveCommands = DriveCommands.BACKx2;
 			setDriveCommands(DriveCommands.BACKx2);
 		}
 		// center
-		// FLYER 187 267
 		else if (y >= 159 && y <= 199) 
 		{
-//			driveCommands = DriveCommands.CENTER;
 			setDriveCommands(DriveCommands.CENTER);
 		}
 		
@@ -122,6 +113,10 @@ public class DriveClass {
 		driveSwitch();
 	}
 	
+	/**
+	 *  Based on the drive command set, the string value of the command will be sent to the FitPC and the 
+	 *  latch will be changed to match this value.
+	 */
 	public void driveSwitch() {
 		switch (driveCommands) {
 		case FORWARD:

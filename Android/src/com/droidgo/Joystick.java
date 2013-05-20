@@ -6,17 +6,14 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.MotionEvent;
 import android.view.View;
-import com.droidgo.HandleMovedListener;
-
-//import com.droidgo.comm.CarDroidConnection;
+import com.droidgo.interfaces.HandleMovedListener;
 
 /**
- * The joystick used to control the NXT brick.
+ * The joystick used to control the Telepresence robot.
  * 
  * @author Ronan Doyle
  * 
  */
-
 public class Joystick extends View {
 	String TAG = "DrawJoystick";
 	Canvas canvas = new Canvas();
@@ -30,8 +27,6 @@ public class Joystick extends View {
 	private int motionRadius; // The radius of the movement.
 	private int sizeX; // Size of the view coordinates.
 	private int centerX, centerY; // Center of the view coordinates.
-	private int offsetX; // Coordinates used when the touch events are received
-							// from a parents oirgin.
 	private float handleX, handleY; // Center of handle.
 	private float movementDetection; // The number of pixels moved across before
 										// the listener picks up the movement.
@@ -47,9 +42,9 @@ public class Joystick extends View {
 	private Paint background;
 	private Paint stick;
 	private boolean jumpToCenter;
-	private boolean swapY;
 	private float motionRestriction; // The restriction of the movement.
 
+	// The constructor for the joystick.
 	public Joystick(Context context) {
 		super(context);
 		setupJoystickView();
@@ -60,14 +55,12 @@ public class Joystick extends View {
 	/**
 	 * Setting up the joystick view.
 	 */
-
 	private void setupJoystickView() {
 		userX = 0;
 		userY = 0;
 		sizeX = 0;
 		centerX = 0;
 		centerY = 0;
-		offsetX = 0;
 		backgroundRadius = 0;
 		handleRadius = 0;
 
@@ -86,21 +79,15 @@ public class Joystick extends View {
 		stick.setColor(Color.GRAY);
 		stick.setStrokeWidth(20);
 
-		innerPadding = 10; // Possibly smaller?
-		setRangeOfMotion(10); // Possibly bigger?
+		innerPadding = 10;
+		setRangeOfMotion(10);
 		setJumpToCenter(true);
 		setFocusable(true);
-		setSwapY(true);
 	}
-
-	public boolean isSwapY() {
-		return swapY;
-	}
-
-	public void setSwapY(boolean swapY) {
-		this.swapY = swapY;
-	}
-
+	
+	/**
+	 * Setting the range of motion for the joystick.
+	 */
 	public void setRangeOfMotion(float rangeOfMotion) {
 		this.rangeOfMotion = rangeOfMotion;
 	}
@@ -125,7 +112,6 @@ public class Joystick extends View {
 	 * The following methods deal with the drawing of the joystick, and how it
 	 * can be moved.
 	 */
-
 	@Override
 	protected void onLayout(boolean change, int left, int top, int right,
 			int bottom) {
@@ -146,6 +132,9 @@ public class Joystick extends View {
 		motionRadius = Math.min(centerX, centerY) - handleRadius;
 	}
 
+	/**
+	 * The drawing and redrawing of the joysticks handle.
+	 */
 	@Override
 	protected void onDraw(Canvas canvas) {
 		canvas.save();
@@ -175,18 +164,20 @@ public class Joystick extends View {
 		canvas.restore();
 	}
 
-	// This method only allows the user to click in a certain "boxed" area.
+	/**
+	 *  This method allows the user to only click in a certain "boxed" area.
+	 */
 	private void resrictUserTouch() {
 		float minX = Math.min(userX, motionRadius);
 		userX = Math.max(minX, - motionRadius);
 
 		float minY = Math.min(userY, motionRadius);
 		userY = Math.max(minY, - motionRadius);
-
 	}
 
-	// This method then creates a circle area for which the user can only
-	// operate inside.
+	/**
+	 *  This method then creates a circle area for which the user can only operate inside.
+	 */
 	private void restrictUserTouchToCircle() {
 		float differenceX = userX;
 		float differenceY = userY;
@@ -204,11 +195,12 @@ public class Joystick extends View {
 		this.userTouchId = touchId;
 	}
 
+	/**
+	 * Detect when a user touch event has occured on the joystick.
+	 */
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		int action = event.getAction();
-//		System.out.println("X: " + event.getX());
-//		System.out.println("Y: " + event.getY());
 
 		switch (action & MotionEvent.ACTION_MASK) {
 
@@ -237,6 +229,11 @@ public class Joystick extends View {
 		return false;
 	}
 
+	/**
+	 * Moves the joystick based on the users touch.
+	 * @param MotionEvent
+	 * @return
+	 */
 	private boolean handleMove(MotionEvent event) {
 		float x = event.getX(userTouchId);
 		userX = x - centerX;
@@ -251,6 +248,10 @@ public class Joystick extends View {
 		return true;
 	}
 
+	/**
+	 * Utility method used by the handleMove method. Restricts the joysticks handle from moving outside of the
+	 * designated area.
+	 */
 	private void notifyMove() {
 		if (motionRestriction == CIRCLE_RESTRICTION) {
 			restrictUserTouchToCircle();
@@ -271,10 +272,8 @@ public class Joystick extends View {
 	}
 
 	/**
-	 * The centerHandle() method is used to gradually move the joystick back to
-	 * its starting position after it has been released.
+	 * Gradually moves the joystick back to its starting position after the handle has been released by the user.
 	 */
-
 	private void centerHandle() {
 		if (jumpToCenter) {
 			final int fps = 5;
@@ -289,13 +288,9 @@ public class Joystick extends View {
 						userY += y;
 						resrictUserTouch();
 						invalidate();
-//						new SendToServer("CENTER").execute();
-
 					}
 				}, i * 20);
 			}
-			// new SendToServer("CENTER").execute();
-			// System.out.println("CENTER");
 		}
 	}
 }

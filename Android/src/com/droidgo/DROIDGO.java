@@ -1,16 +1,6 @@
 package com.droidgo;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
 
 import android.app.Activity;
 import android.content.ComponentName;
@@ -18,8 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
-import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
@@ -27,14 +15,12 @@ import android.hardware.Camera.Parameters;
 import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.Size;
 import android.media.AudioManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
-import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
@@ -49,25 +35,22 @@ import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import com.droidgo.comm.CarDroidConnection;
 import com.droidgo.httpservice.LocalHttpService;
 import com.droidgo.settings.Preferences;
 import com.droidgo.DriveClass;
 
 /**
- * The main activity for the project.
+ * The main activity for the project. Displays the apps UI.
  * 
  * @author Ronan Doyle
  * 
  */
-
 public class DROIDGO extends Activity implements OnTouchListener,
 		PreviewCallback, Callback {
 
 	private LinearLayout controlsLayout; // Section to contain the joystick.
 	private TextView connectionStatus; // Displays connection status (Connected or Disconnected).
 	private Joystick joystick; // Joystick object.
-	private CarDroidConnection carDroidCon; // Handles the Bluetooth connection between the App and NXT. So far not being used for the WiFi version (DO NOT REMOVE!).
 	private WebView webV;
 	private Switch connSwitch;
 	int cameraIndex = Camera.CameraInfo.CAMERA_FACING_FRONT;
@@ -81,7 +64,7 @@ public class DROIDGO extends Activity implements OnTouchListener,
 	public static SharedPreferences iSettings = null;
 	DriveClass driveClass;
 
-	//ACTIVE used when user is touching app, IDLE for when no touch exists
+	//ACTIVE used when user is touching app, IDLE for when there is no touch.
 	private enum StateMachine {
 		ACTIVE, IDLE
 	};
@@ -91,11 +74,13 @@ public class DROIDGO extends Activity implements OnTouchListener,
 	
 	SendMic sendMic;
 
+	/**
+	 * Instantiating all of the necessary variables.
+	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		carDroidCon = new CarDroidConnection(this);
 		sendMic = new SendMic();
 
 		controlsLayout = (LinearLayout) findViewById(R.id.controlsLayout);
@@ -112,6 +97,8 @@ public class DROIDGO extends Activity implements OnTouchListener,
 		connSwitch = (Switch) findViewById(R.id.switch1);
 		connSwitch.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 
+			// This is used to determine whether or not the On/Off switch for the camera and audio
+			// streaming from the app has been clicked.
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView,
 					boolean isChecked) {
@@ -120,8 +107,6 @@ public class DROIDGO extends Activity implements OnTouchListener,
 					//Start camera
 					doBindService();
 					//Start audio
-					
-					
 					Thread streamAudio = new Thread(new Runnable(){
 
 						@Override
@@ -155,10 +140,12 @@ public class DROIDGO extends Activity implements OnTouchListener,
 		driveClass = new DriveClass();
 
 		SetupCamera();
-
 		SetupCameraFeed();
 	}
-
+	
+	/**
+	 *  Setting up the camera feed from the robot. The IP address of the feed is taken from the settings screen.
+	 */
 	private void SetupCameraFeed() {
 		iSettings = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -172,10 +159,13 @@ public class DROIDGO extends Activity implements OnTouchListener,
 				+ iSettings.getString(Preferences.IP_ADDRESS, "") + ":"
 				+ iSettings.getString(Preferences.PORT, "8080")
 				+ "/javascript_simple.html");
-//		webV.loadUrl("http://"
-//				+ iSettings.getString(Preferences.VIDEO_STREAM, "bambuser.com/v/3523717"));
 	}
 
+	/**
+	 *  Setting up the Android camera. This will prepare the cameras content so that it can be displayed on a section 
+	 *  of the screen so that it can be streamed from the NanaHTTPD server. The section of the screen it will 
+	 *  be displayed on will be invisible to the user.
+	 */
 	private void SetupCamera() {
 
 		final SurfaceView preview = (SurfaceView) findViewById(R.id.cameraView);
@@ -187,14 +177,20 @@ public class DROIDGO extends Activity implements OnTouchListener,
 		camera.setPreviewCallback(this);
 		
 	}
-
+	
+	// I had encountered a problem in the app, when the images streamed from the Android devices camera were being displayed
+	// in the browser on the FitPC3, they were being shown correctly, but rotated at 90 degrees to the right. I created the
+	// code below to change the orientation of the camera, in the hope that they would be rotated in the browser. This code
+	// did not seem to fix the problem, despite it working in other tests. I managed to solve this problem by rotating the 
+	// canvas element in the HTML page by 270 degrees. This allowed the images to appear correctly.
+	//
+	// I have left in the code below in the hope that it may work for some devices.
+	
 //	public static void setCameraDisplayOrientation(Activity activity,
 //			int cameraId, android.hardware.Camera camera) {
 //		android.hardware.Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
 //		android.hardware.Camera.getCameraInfo(cameraId, info);
 //		
-//		// FIXME This code does not work. Need to investigate camera image rotation capabilities further.
-//		/*******************************/
 //		int rotation = activity.getWindowManager().getDefaultDisplay()
 //				.getRotation();
 //		int degrees = 0;
@@ -222,8 +218,12 @@ public class DROIDGO extends Activity implements OnTouchListener,
 //		}
 //		camera.setDisplayOrientation(result);
 //	}
-	/*******************************/
 
+	/**
+	 *  Creating the surface to be used for the Android cameras content
+	 * @param width
+	 * @param height
+	 */
 	private void initPreview(int width, int height) {
 		try {
 			camera.setPreviewDisplay(previewHolder);
@@ -233,6 +233,10 @@ public class DROIDGO extends Activity implements OnTouchListener,
 
 	}
 
+	/**
+	 *  Displaying the content from the Android camera on the phone. This content will not be visible to users
+	 *  of the app as the size of the preview screen is set to 1dp.
+	 */
 	private void startPreview() {
 		Parameters params = camera.getParameters();
 
@@ -242,9 +246,8 @@ public class DROIDGO extends Activity implements OnTouchListener,
 		// params.setPreviewFpsRange(1, 150);
 
 		/**
-		 * This is for HTC Flyer (Tablet's)
+		 * For larger tablet screens use the values
 		 */
-		// 5000, 31000
 		params.setPreviewFpsRange(5, 31); // setPreviewFrameRate() depreciated for setPreviewFpsRange();
 
 		camera.setParameters(params);
@@ -271,6 +274,12 @@ public class DROIDGO extends Activity implements OnTouchListener,
 		}
 	};
 	
+	/**
+	 *  This method is called when a touch event occurs on the joystick. Based on the type of event
+	 *  that occurs, an action is carried out. The joystick state is considered to be active while this method
+	 *  is being called. If the user removes their finger from the joystick then the state will be set to idle.
+	 * @param event
+	 */
 	private void activeEvent(MotionEvent event) {
 
 		switch (event.getAction()) {
@@ -284,22 +293,22 @@ public class DROIDGO extends Activity implements OnTouchListener,
 			break;
 
 		case MotionEvent.ACTION_MOVE:
-
-			// forward and reverse
+			// Calling drive commands based on x and y values.
 			driveClass.driveRegion((int) event.getX(),(int) event.getY());
 
-			// left and right
-//			leftRight((int) event.getX(),(int) event.getY());
 			break;
 
 		default:
 			break;
 
 		}
-		// System.out.println("Current State: ACTIVE, Event: " + event
-		// + ", New State: " + state);
 	}
 
+	/**
+	 *  This method is called when the user is not touching the joystick. When the user touches the joystick
+	 *  again, the state will be set to active and the activeEvent method will be used instead.
+	 * @param event
+	 */
 	private void idleEvent(MotionEvent event) {
 		// The app waits for the state to change to active before sending data to the server.
 		switch (event.getAction()) {
@@ -314,14 +323,14 @@ public class DROIDGO extends Activity implements OnTouchListener,
 			break;
 
 		default:
-			// System.out.println("ERROR: Incorrect Event " + event);
 			break;
 
 		}
-		// System.out.println("Current State: ACTIVE, Event: " + event
-		// + ", New State: " + state);
 	}
 
+	/**
+	 *  This method is used to determine whether the joystick is in an active or idle state.
+	 */
 	public boolean onTouch(View v, MotionEvent event) {
 		boolean result = false;
 		if (v == joystick) {
@@ -336,20 +345,24 @@ public class DROIDGO extends Activity implements OnTouchListener,
 				break;
 
 			default:
-				// System.out.println("Error: Incorrect State " + state);
 			}
 		}
 		return result;
 	}
 
 	
-
+	/**
+	 * Creating the options menu
+	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.menu, menu);
 		return true;
 	}
-
+	
+	/**
+	 *  When the settings option is selected from the options menu, the preferences screen will be opened up.
+	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
@@ -359,36 +372,18 @@ public class DROIDGO extends Activity implements OnTouchListener,
 		return true;
 	}
 	
-/*
- * TODO - Create a an option to allow Bluetooth connectivity?
- */
-	// public void connect() {
-	// // carDroidCon.configBluetooth();
-	// // carDroidCon.establishConnection();
-	// // connector = CarDroidConnection.connect(CONN_TYPE.LEGO_LCP);
-	// // connector.connectTo("00:16:53:1A:49:A0");
-	// if (carDroidCon.socket == null) {
-	// carDroidCon.configBluetooth();
-	// } else {
-	// carDroidCon.closeBluetoothConnection();
-	// }
-	// }
-	//
-	// public void disconnect() {
-	// carDroidCon.closeBluetoothConnection();
-	// }
-	
-
-	/*
-	 * TODO Extract this class into its own class.
+	/**
+	 *  Creates the preferences screen, from which the user can enter the IP address/ports of the Robot
 	 */
-	
-
 	private void goToPrefs() {
 		startActivity(new Intent(DROIDGO.this, Preferences.class));
 		finish();
 	}
 
+	/**
+	 *  Used to create preview frames of the Android devices camera content. These frames are then converted to
+	 *  JPGs before being sent to the NanoHTTPD server on the Android device.
+	 */
 	public void onPreviewFrame(final byte[] data, final Camera camera) {
 		
 		Thread yuvThread = new Thread (new Runnable() {
@@ -401,23 +396,25 @@ public class DROIDGO extends Activity implements OnTouchListener,
 			}
 		});
 		yuvThread.start();
-		
-		
 	}
 
+	/**
+	 *  This is used in the creation of the connection to the local server.
+	 */
 	private ServiceConnection conn = new ServiceConnection() {
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			mBoundService = ((LocalHttpService.LocalBinder) service)
 					.getService();
-
 		}
 
 		public void onServiceDisconnected(ComponentName name) {
 			mBoundService = null;
-
 		}
 	};
 
+	/**
+	 *  Starting the stream of the content to the NanoHTTPD server.
+	 */
 	public void doBindService() {
 		final Intent mServiceIntent = new Intent(this, LocalHttpService.class);
 		
@@ -437,6 +434,9 @@ public class DROIDGO extends Activity implements OnTouchListener,
 		
 	}
 
+	/**
+	 *  Stopping the stream of the content to the NanoHTTPD server.
+	 */
 	public void doUnbindService() {
 		Thread unbindService = new Thread(new Runnable() {
 			public void run(){
@@ -452,9 +452,12 @@ public class DROIDGO extends Activity implements OnTouchListener,
 		
 	}
 
+	/**
+	 *  The Android devices default destroy method. This has been modified to relenquish the apps hold
+	 *  on the devices camera and stop the NanoHTTPD server.
+	 */
 	@Override
 	protected void onDestroy() {
-//		camera.setPreviewCallback(null);
 		camera.release();
 		doUnbindService();
 

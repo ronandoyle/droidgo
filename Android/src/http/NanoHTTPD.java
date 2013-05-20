@@ -5,20 +5,15 @@ package http;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLEncoder;
-import java.net.UnknownHostException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Vector;
@@ -33,16 +28,16 @@ import java.io.FileOutputStream;
 
 import com.droidgo.httpservice.LocalHttpService;
 
-import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
-import android.media.AudioFormat;
-import android.media.AudioRecord;
 import android.media.MediaRecorder;
-import android.os.ParcelFileDescriptor;
 
 /**
+ * 
+ * I Ronan Doyle, do not accept any credit for this class. All credit goes to the developers listed
+ * under the Copyright section below.
+ * 
  * A simple, tiny, nicely embeddable HTTP 1.0 (partially 1.1) server in Java
  *
  * <p> NanoHTTPD version 1.25,

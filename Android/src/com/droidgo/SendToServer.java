@@ -16,6 +16,13 @@ import com.droidgo.settings.Preferences;
 
 import android.os.AsyncTask;
 
+/**
+ * This class is used to send the drive commands to the PHP script on the lighttpd web server
+ * running on the Fit-PC3.
+ * 
+ * @author Ronan Doyle
+ * 
+ */
 class SendToServer extends AsyncTask<Void, Integer, Void> {
 
 	String message;
@@ -31,6 +38,10 @@ class SendToServer extends AsyncTask<Void, Integer, Void> {
 
 	}
 
+	/**
+	 * Performs a HTTP POST on a background thread/process in the application. This POST will send a string containing a drive
+	 * command to a PHP script on the Fit-PC3s lighttpd server, which will in turn pass this command onto a Python script.
+	 */
 	@Override
 	protected Void doInBackground(Void... params) {
 		
