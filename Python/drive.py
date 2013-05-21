@@ -6,6 +6,8 @@ import socket
 import sys
 from nxt.sensor import *
 
+# This Python script is the main Pyhton script for the DROID-GO project. It consists of a server socket, which takes in data and issues drive commands to the Lego NXT, based on teh value of this data.
+
 print "Initializing Python Script"
 
 print "Locating brick and servos..."
